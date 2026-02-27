@@ -4,24 +4,27 @@ import axios from 'axios';
 
 export default function Home() {
   const [message, setMessage] = useState('Loading...');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Checking backend...');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // First check if backend is healthy
-        const healthCheck = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/health`);
-        
+        // Call Next.js API route (acts as a proxy)
+        const healthCheck = await axios.get('/api/health');
+
         if (healthCheck.data.status === 'healthy') {
           setStatus('Backend is connected!');
-          // Then fetch the message
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/message`);
+
+          const response = await axios.get('/api/message');
           setMessage(response.data.message);
+        } else {
+          setStatus('Backend is unhealthy');
+          setMessage('Backend reported unhealthy status');
         }
       } catch (error) {
-        setMessage('Failed to connect to the backend');
+        console.error('Error connecting to backend:', error);
         setStatus('Backend connection failed');
-        console.error('Error:', error);
+        setMessage('Failed to connect to the backend');
       }
     };
 
@@ -33,20 +36,23 @@ export default function Home() {
       <Head>
         <title>DevOps Assignment</title>
         <meta name="description" content="DevOps Assignment with FastAPI and Next.js" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
         <h1>DevOps Assignment</h1>
+
         <div className="status">
-          <p>Status: <span className={status.includes('connected') ? 'success' : 'error'}>{status}</span></p>
+          <p>
+            Status:{' '}
+            <span className={status.includes('connected') ? 'success' : 'error'}>
+              {status}
+            </span>
+          </p>
         </div>
+
         <div className="message-box">
           <h2>Backend Message:</h2>
           <p>{message}</p>
-        </div>
-        <div className="info">
-          <p>Backend URL: {process.env.NEXT_PUBLIC_API_URL}</p>
         </div>
       </main>
 
@@ -79,6 +85,10 @@ export default function Home() {
           margin-bottom: 2rem;
         }
 
+        .status {
+          margin-bottom: 1.5rem;
+        }
+
         .message-box {
           margin: 2rem 0;
           padding: 1.5rem;
@@ -94,14 +104,8 @@ export default function Home() {
         }
 
         .error {
-          color: #f00;
+          color: #e00;
           font-weight: bold;
-        }
-
-        .info {
-          margin-top: 2rem;
-          font-size: 0.9rem;
-          color: #666;
         }
       `}</style>
     </div>
