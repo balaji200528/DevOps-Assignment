@@ -54,7 +54,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Backend URL for server-side proxy (NOT exposed to browser)
-ENV BACKEND_INTERNAL_URL=http://backend:8000
+# ENV BACKEND_INTERNAL_URL=http://backend:8000
+
+ARG BACKEND_INTERNAL_URL
+ENV BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL}
 
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
